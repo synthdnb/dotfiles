@@ -1,0 +1,15 @@
+[init]
+	defaultBranch = main
+[user]
+	name = Marshall Kim
+	email = marshall@vessl.ai
+[core]
+	editor = nvim
+	excludesFile = ~/.gitignore
+	pager = hunk pager
+[pull]
+	ff = only
+[push]
+	autoSetupRemote = true
+[url "git@github.com:"]
+	insteadOf = https://github.com/

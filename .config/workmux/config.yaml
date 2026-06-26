@@ -1,0 +1,30 @@
+# Global workmux configuration
+
+# Window prefix for tmux window names created by workmux
+window_prefix: "wm-"
+
+# Default agent for <agent> placeholder in panes
+agent: claude --permission-mode=bypassPermissions
+#agent: codex --dangerously-bypass-approvals-and-sandbox
+
+# Default merge strategy
+merge_strategy: merge
+
+post_create:
+  - mise trust
+
+# Default pane layout when creating new worktrees
+panes:
+  - command: <agent>
+    focus: true
+  - split: horizontal
+
+# Agent status icons (shown in tmux window names)
+status_icons:
+  working: '🔄'
+  waiting: '⏸️'
+  done: '✔️'
+
+status_format: false
+
+nerdfont: true

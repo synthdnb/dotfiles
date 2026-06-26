@@ -1,0 +1,5 @@
+[tools]
+python = "3.11"
+ruby = "3.2.2"
+node = "latest"
+go = "1.25.4"
