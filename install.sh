@@ -53,14 +53,12 @@ link .config/htop/htoprc         "$HOME/.config/htop/htoprc"
 link .config/workmux/config.yaml "$HOME/.config/workmux/config.yaml"
 link .config/mise/config.toml    "$HOME/.config/mise/config.toml"
 
-# mise installs the toolchains (Node/Go/Python/Ruby) BEFORE `brew bundle`, because
-# the Brewfile's `npm "..."` and `go "..."` entries need them on PATH. Ruby uses
-# precompiled binaries (ruby.compile=false in the config), so no slow source build.
+# Install the global tool versions (Node/Go/Python/Ruby) from the mise config.
+# Ruby uses precompiled binaries (ruby.compile=false), so no slow source build.
 command -v mise >/dev/null 2>&1 || brew install mise
 mise install                          # tools per ~/.config/mise/config.toml (linked above)
-eval "$(mise activate bash --shims)"  # put mise shims (node, npm, go, …) ahead on PATH for this script
 
-# Homebrew packages (brew is guaranteed by preflight; addon entries use mise's toolchains)
+# Homebrew packages (brew is guaranteed by preflight)
 brew bundle --file="$DOTFILES/Brewfile"
 # Private/host-specific packages (untracked; e.g. internal tooling)
 if [ -f "$DOTFILES/Brewfile.local" ]; then
