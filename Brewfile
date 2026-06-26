@@ -12,6 +12,8 @@ brew "fzf"
 brew "gh"
 # Distributed revision control system
 brew "git"
+# Open source programming language to build simple/reliable/efficient software
+brew "go"
 # Kubernetes package manager
 brew "helm"
 # Improved top (interactive process viewer)
@@ -26,6 +28,8 @@ brew "neovim"
 brew "openjdk@11"
 # Cryptography and SSL/TLS Toolkit
 brew "openssl@1.1"
+# Interpreted, interactive, object-oriented programming language
+brew "python"
 # Reattach process (e.g., tmux) to background
 brew "reattach-to-user-namespace"
 # Search tool like grep and The Silver Searcher

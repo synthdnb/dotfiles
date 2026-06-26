@@ -1,6 +1,0 @@
-[tools]
-python = "3.11"
-node = "latest"
-go = "1.25.4"
-# ruby intentionally omitted — installed as a precompiled bottle via the Brewfile
-# (brew "ruby"). mise/ruby-build compiles from source and needs libyaml; not worth it.

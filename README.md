@@ -28,17 +28,16 @@ applies `osx.sh`. The mise and fzf/tpm/moon steps are described below.
 | `.config/nvim/init.lua` | editor |
 | `.gitconfig` `.gitignore` | git (global) |
 | `.config/htop/htoprc` `.config/workmux/config.yaml` | app configs |
-| `.config/mise/config.toml` | mise global tool versions (node/python/ruby/go) |
 | `Brewfile` | `brew bundle` package list (regenerate: `brew bundle dump --force`) |
 | `osx.sh` | macOS `defaults write` tweaks |
 
 `install.sh` also runs the fzf key-binding installer, clones tpm, and installs
 moon — none of which `brew bundle` handles.
 
-Node/npm are managed by **mise**, not brew. `install.sh` therefore runs
-`mise install` (per `.config/mise/config.toml`) and puts mise's shims on PATH
-*before* `brew bundle`, so the Brewfile's `npm "..."` globals install into
-mise's Node rather than failing or landing in brew's.
+Node, Go, Python, and Ruby come from **Homebrew** (global, precompiled). **mise**
+is installed for per-project tool versions only — it activates a version when you
+`cd` into a project with a `.mise.toml`/`.tool-versions`, and otherwise stays out
+of the way. There is no global mise config.
 
 ## Prerequisites — install these *before* `./install.sh`
 
