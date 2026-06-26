@@ -12,6 +12,10 @@ fi
 eval "$(/opt/homebrew/bin/brew shellenv)"   # ponytail: Apple Silicon path; add /usr/local for Intel if ever needed
 
 REPO="$HOME/ws/dotfiles"
-[ -d "$REPO" ] || git clone https://github.com/synthdnb/dotfiles.git "$REPO"
+if [ -d "$REPO/.git" ]; then
+  git -C "$REPO" pull --ff-only
+else
+  git clone https://github.com/synthdnb/dotfiles.git "$REPO"
+fi
 cd "$REPO"
 exec ./install.sh

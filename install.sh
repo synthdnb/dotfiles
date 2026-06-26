@@ -51,15 +51,16 @@ done
 link .config/nvim/init.lua       "$HOME/.config/nvim/init.lua"
 link .config/htop/htoprc         "$HOME/.config/htop/htoprc"
 link .config/workmux/config.yaml "$HOME/.config/workmux/config.yaml"
+link .config/mise/config.toml    "$HOME/.config/mise/config.toml"
 
-# mise is installed for per-project tool versions only (no global config); global
-# Node/Go/Python/Ruby come from Homebrew. node and go must be on PATH before
-# `brew bundle` so its `npm "..."` and `go "..."` entries can install.
+# mise installs the toolchains (Node/Go/Python/Ruby) BEFORE `brew bundle`, because
+# the Brewfile's `npm "..."` and `go "..."` entries need them on PATH. Ruby uses
+# precompiled binaries (ruby.compile=false in the config), so no slow source build.
 command -v mise >/dev/null 2>&1 || brew install mise
-command -v npm  >/dev/null 2>&1 || brew install node
-command -v go   >/dev/null 2>&1 || brew install go
+mise install                          # tools per ~/.config/mise/config.toml (linked above)
+eval "$(mise activate bash --shims)"  # put mise shims (node, npm, go, …) ahead on PATH for this script
 
-# Homebrew packages (brew is guaranteed by preflight)
+# Homebrew packages (brew is guaranteed by preflight; addon entries use mise's toolchains)
 brew bundle --file="$DOTFILES/Brewfile"
 # Private/host-specific packages (untracked; e.g. internal tooling)
 if [ -f "$DOTFILES/Brewfile.local" ]; then

@@ -1,0 +1,10 @@
+[tools]
+python = "3.11"
+node = "latest"
+go = "1.25.4"
+ruby = "latest"
+
+[settings]
+# Install precompiled Ruby binaries instead of building from source — avoids the
+# libyaml/psych compile hassle and is much faster.
+ruby.compile = false

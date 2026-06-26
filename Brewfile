@@ -12,8 +12,6 @@ brew "fzf"
 brew "gh"
 # Distributed revision control system
 brew "git"
-# Open source programming language to build simple/reliable/efficient software
-brew "go"
 # Kubernetes package manager
 brew "helm"
 # Improved top (interactive process viewer)
@@ -24,20 +22,14 @@ brew "jq"
 brew "kubectx"
 # Ambitious Vim-fork focused on extensibility and agility
 brew "neovim"
-# Open-source, cross-platform JavaScript runtime environment
-brew "node"
 # Development kit for the Java programming language
 brew "openjdk@11"
 # Cryptography and SSL/TLS Toolkit
 brew "openssl@1.1"
-# Interpreted, interactive, object-oriented programming language
-brew "python"
 # Reattach process (e.g., tmux) to background
 brew "reattach-to-user-namespace"
 # Search tool like grep and The Silver Searcher
 brew "ripgrep"
-# Powerful, clean, object-oriented scripting language (precompiled bottle)
-brew "ruby"
 # Safe, concurrent, practical language
 brew "rust"
 # Static analysis and lint tool, for (ba)sh scripts
