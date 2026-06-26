@@ -75,6 +75,11 @@ if [ ! -x "$HOME/.moon/bin/moon" ]; then
   curl -fsSL https://moonrepo.dev/install/moon.sh | bash || echo "moon install failed — see https://moonrepo.dev/docs/install"
 fi
 
+# Claude Code — self-updating native binary (replaces the old npm install); -> ~/.local/bin
+if ! command -v claude >/dev/null 2>&1; then
+  curl -fsSL https://claude.ai/install.sh | bash || echo "Claude Code install failed — see https://code.claude.com/docs"
+fi
+
 # tmux plugin manager (after this: open tmux, press prefix + I to install plugins)
 if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
   git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
