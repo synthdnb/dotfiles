@@ -57,12 +57,7 @@ link .config/mise/config.toml    "$HOME/.config/mise/config.toml"
 # and the Brewfile's `npm "..."` entries install globals into mise's Node — so npm
 # has to be on PATH first. (Building the runtimes may take a while.)
 command -v mise >/dev/null 2>&1 || brew install mise
-# Ruby's psych extension needs libyaml's headers (yaml.h). Install libyaml and
-# point ruby-build at the Homebrew keg — it's not on the default include path on
-# Apple Silicon, so the build fails with "yaml.h not found" without this.
-brew list libyaml >/dev/null 2>&1 || brew install libyaml
-export RUBY_CONFIGURE_OPTS="--with-libyaml-dir=$(brew --prefix libyaml)${RUBY_CONFIGURE_OPTS:+ $RUBY_CONFIGURE_OPTS}"
-mise install                          # node/python/ruby/go per ~/.config/mise/config.toml (linked above)
+mise install                          # node/python/go per ~/.config/mise/config.toml (linked above)
 eval "$(mise activate bash --shims)"  # put mise shims (node, npm, npx) ahead on PATH for this script
 
 # Homebrew packages (brew is guaranteed by preflight; npm entries now use mise's npm)
