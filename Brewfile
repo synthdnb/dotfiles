@@ -24,6 +24,8 @@ brew "jq"
 brew "kubectx"
 # Ambitious Vim-fork focused on extensibility and agility
 brew "neovim"
+# Open-source, cross-platform JavaScript runtime environment
+brew "node"
 # Development kit for the Java programming language
 brew "openjdk@11"
 # Cryptography and SSL/TLS Toolkit
