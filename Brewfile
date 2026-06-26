@@ -40,6 +40,8 @@ brew "watch"
 brew "wget"
 # Access X11 clipboards from the command-line
 brew "xclip"
+# Smarter cd command, inspired by z and autojump
+brew "zoxide"
 # UNIX shell (command interpreter)
 brew "zsh"
 

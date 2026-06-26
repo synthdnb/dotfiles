@@ -40,9 +40,6 @@ zinit snippet OMZL::git.zsh
 zinit snippet OMZP::git
 zinit ice depth=1; zinit light romkatv/powerlevel10k
 
-zinit light agkozak/zsh-z
-export FZFZ_SUBDIR_LIMIT=0
-
 zinit light zsh-users/zsh-autosuggestions
 zinit light zdharma-continuum/fast-syntax-highlighting
 zinit light zsh-users/zsh-history-substring-search
@@ -104,6 +101,7 @@ hotspot_disable(){
 }
 
 command -v mise >/dev/null && eval "$(mise activate zsh)"
+command -v zoxide >/dev/null && eval "$(zoxide init zsh)"  # z = jump to dir, zi = interactive
 alias x='tar --zstd -xvf'
 
 # The next line updates PATH for Nebius CLI.
