@@ -1,11 +1,9 @@
 tap "loft-sh/tap", trusted: true
-tap "raine/workmux"
+tap "raine/workmux", trusted: true
 
 # === Tools (brew resolves and installs their dependencies automatically) ===
 # Tool for generating GNU Standards-compliant Makefiles
 brew "automake"
-# CLI tool for quick access to files and directories
-brew "fasd"
 # Command-line fuzzy finder written in Go
 brew "fzf"
 # GitHub command-line tool
@@ -24,8 +22,6 @@ brew "kubectx"
 brew "neovim"
 # Development kit for the Java programming language
 brew "openjdk@11"
-# Cryptography and SSL/TLS Toolkit
-brew "openssl@1.1"
 # Reattach process (e.g., tmux) to background
 brew "reattach-to-user-namespace"
 # Search tool like grep and The Silver Searcher
