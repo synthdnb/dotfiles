@@ -33,7 +33,7 @@ applies `osx.sh`. The mise and fzf/tpm/moon steps are described below.
 | `osx.sh` | macOS `defaults write` tweaks |
 
 `install.sh` also runs the fzf key-binding installer, clones tpm, and installs
-moon and Claude Code (self-updating native binary) — none of which `brew bundle` handles.
+moon, Claude Code, and Codex (self-updating native binaries) — none of which `brew bundle` handles.
 
 Node, Go, Python, and Ruby are managed by **mise** (`.config/mise/config.toml`).
 `install.sh` runs `mise install` and puts mise's shims on PATH *before* `brew

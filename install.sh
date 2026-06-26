@@ -80,6 +80,11 @@ if ! command -v claude >/dev/null 2>&1; then
   curl -fsSL https://claude.ai/install.sh | bash || echo "Claude Code install failed — see https://code.claude.com/docs"
 fi
 
+# Codex CLI — official standalone installer (https://developers.openai.com/codex/cli)
+if ! command -v codex >/dev/null 2>&1; then
+  curl -fsSL https://chatgpt.com/codex/install.sh | CODEX_NON_INTERACTIVE=1 sh || echo "Codex install failed — see https://developers.openai.com/codex/cli"
+fi
+
 # tmux plugin manager (after this: open tmux, press prefix + I to install plugins)
 if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
   git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"

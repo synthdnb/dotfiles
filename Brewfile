@@ -1,5 +1,6 @@
 tap "loft-sh/tap", trusted: true
 tap "raine/workmux", trusted: true
+tap "modem-dev/tap", trusted: true
 
 # === Tools (brew resolves and installs their dependencies automatically) ===
 # Tool for generating GNU Standards-compliant Makefiles
@@ -14,6 +15,8 @@ brew "git"
 brew "helm"
 # Improved top (interactive process viewer)
 brew "htop"
+# Review-first terminal diff viewer (used as git pager/difftool)
+brew "modem-dev/tap/hunk"
 # Lightweight and flexible command-line JSON processor
 brew "jq"
 # Tool that can switch between kubectl contexts easily and create aliases
