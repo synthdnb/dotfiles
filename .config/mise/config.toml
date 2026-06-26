@@ -3,3 +3,8 @@ python = "3.11"
 ruby = "3.2.2"
 node = "latest"
 go = "1.25.4"
+
+[env]
+# Ruby's psych extension needs libyaml; point ruby-build at the Homebrew keg
+# (Apple Silicon). Requires `brew install libyaml`. Covers manual `mise install`.
+RUBY_CONFIGURE_OPTS = "--with-libyaml-dir=/opt/homebrew/opt/libyaml"
