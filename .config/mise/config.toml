@@ -4,6 +4,16 @@ node = "latest"
 go = "1.25.4"
 ruby = "latest"
 
+[env]
+# mise points GOBIN at the ACTIVE Go version's own bin dir, so `go install`
+# binaries land inside a toolchain directory and disappear from PATH the moment
+# another repo pins a different Go (~/ws/magma pins 1.25.11, which hid every
+# tool installed under 1.25.4). `mise uninstall go@X` would delete them outright.
+# ~/go/bin is version-independent and already on PATH via .zshrc.
+# Absolute, not ~/go/bin: mise exports [env] values verbatim without expanding
+# the tilde, and Go would read that as a relative dir literally named "~".
+GOBIN = "/Users/marshall/go/bin"
+
 [settings]
 # Install precompiled Ruby binaries instead of building from source — avoids the
 # libyaml/psych compile hassle and is much faster.
