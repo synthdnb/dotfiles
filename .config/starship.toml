@@ -1,12 +1,10 @@
 # ~/.config/starship.toml — prompt (replaces Powerlevel10k / .p10k.zsh)
-# Line 1: dir + git on the left, status/duration/env on the right (via $fill). Line 2: ❯
+# Line 1: dir + git, then status/duration/env only when relevant (no right-aligned part: it
+# reflows badly when a pane is split). Line 2: ❯
 add_newline = false
 format = """
-$directory$git_branch$git_status$fill$status$cmd_duration$jobs$python$kubernetes$terraform$aws$username$hostname$time
+$directory$git_branch$git_status$status$cmd_duration$jobs$python$kubernetes$terraform$aws$username$hostname
 $character"""
-
-[fill]
-symbol = ' '
 
 [directory]
 style = 'fg:31'
@@ -90,9 +88,3 @@ format = '[$user]($style)@'
 
 [hostname]
 format = '[$hostname]($style) '
-
-[time]
-disabled = false
-time_format = '%H:%M:%S'
-style = 'fg:66'
-format = '[$time]($style)'
