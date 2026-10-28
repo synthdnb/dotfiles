@@ -78,6 +78,12 @@ Starship (and Powerlevel10k) glyphs.
   (substring, like zsh-history-substring-search); `ctrl-r` is fzf history search.
 - POSIX `source` snippets (`export FOO=bar`, `eval "$(tool init zsh)"`) need
   translating to fish (`set -gx FOO bar`, `tool init fish | source`).
+- The zoxide, fzf, and starship `init` scripts are cached in
+  `~/.cache/fish/init.fish`. The cache is rebuilt automatically when a tool's path
+  or binary changes (a `brew upgrade` moves it to a new Cellar version); run
+  `rm ~/.cache/fish/init.fish` to force a rebuild.
+- `install.sh` sets `MISE_FISH_AUTO_ACTIVATE=0` as a universal variable, which
+  turns off Homebrew's mise snippet, so mise activates once, from `config.fish`.
 
 ## Secrets
 
