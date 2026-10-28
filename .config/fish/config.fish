@@ -2,7 +2,20 @@
 # Symlinked to ~/.config/fish/config.fish by install.sh.
 
 ### Environment (runs for non-interactive fish too)
-/opt/homebrew/bin/brew shellenv | source # was .zprofile
+# Output of `brew shellenv fish`, pinned (was .zprofile): spawning brew cost
+# ~18 ms per shell, non-interactive ones too. Regenerate with `brew shellenv fish`
+# if Homebrew moves.
+set -gx HOMEBREW_PREFIX /opt/homebrew
+set -gx HOMEBREW_CELLAR /opt/homebrew/Cellar
+set -gx HOMEBREW_REPOSITORY /opt/homebrew
+fish_add_path -g --move --path /opt/homebrew/bin /opt/homebrew/sbin
+if test -n "$MANPATH"
+    set -gx MANPATH (string replace --regex '^:*(.*?):*$' ':$1' -- "$MANPATH")
+end
+if not set -q INFOPATH
+    set INFOPATH ''
+end
+set -gx INFOPATH /opt/homebrew/share/info $INFOPATH
 set -gx LSCOLORS Gxfxcxdxbxegedxbagxcad
 set -gx LS_COLORS "di=1;36:ln=35:so=32:pi=33:ex=31:bd=34;46:cd=34;43:su=0;41:sg=30;46:tw=0;42:ow=30;43"
 set -gx TIME_STYLE long-iso
@@ -13,6 +26,12 @@ set -gx CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN 1
 ### PATH (replaces the zsh path=(...), krew, Nebius path.zsh.inc, and pnpm blocks)
 # fish_add_path silently skips directories that do not exist (verified on fish 4.9.3).
 fish_add_path -g ~/.bin ~/.local/bin ~/go/bin ~/.moon/bin ~/.krew/bin ~/.nebius/bin $PNPM_HOME
+# Non-interactive fish (scripts, `fish -c`, launchd) reaches mise-managed tools
+# through its shims; interactive shells get the real install dirs put in front by
+# `mise activate` below. Same as `mise activate fish --shims | source`, minus the process.
+if not status is-interactive
+    fish_add_path -g ~/.local/share/mise/shims
+end
 # OrbStack: command-line tools and integration (appends ~/.orbstack/bin)
 test -f ~/.orbstack/shell/init2.fish; and source ~/.orbstack/shell/init2.fish
 
@@ -60,11 +79,38 @@ end
 if status is-interactive
     set -g fish_greeting # no greeting
     # emacs key bindings are fish's default (was: bindkey -e); auto_cd and history dedupe are built in
-    command -q mise; and mise activate fish | source # brew's vendor_conf.d also does this; re-running only redefines the same functions
-    command -q zoxide; and zoxide init fish | source # z = jump to dir, zi = interactive
-    command -q fzf; and fzf --fish | source # Ctrl-R history, Ctrl-T files, Alt-C cd
+    # brew's vendor_conf.d snippet (/opt/homebrew/share/fish/vendor_conf.d/mise-activate.fish)
+    # would activate mise a second time, for non-interactive shells too, so install.sh
+    # disables it with `set -U MISE_FISH_AUTO_ACTIVATE 0`; this guarded line is the only activation.
+    command -q mise; and mise activate fish | source
+    # Prompt and jump/search tools. Their `init` output only changes when the
+    # binary does, so it is cached: each init spawned a process (starship two)
+    # and together they cost about 25 ms per shell. The cache is rebuilt when a
+    # tool's path or binary changes (brew upgrade), or after
+    # `rm ~/.cache/fish/init.fish`. Builtins only, so the check spawns nothing.
+    set -l cache ~/.cache/fish/init.fish
+    # First line of the cache names the binaries it was built from; a brew upgrade
+    # changes their Cellar path (…/Cellar/starship/1.27.0/…), a manual rebuild their mtime.
+    set -l key "# built from: "(string join ' ' (path resolve (command -v zoxide fzf starship)))
+    set -l have
+    test -r $cache; and read -l have <$cache
+    set -l stale 0
+    test "$have" = "$key"; or set stale 1
+    for tool in (command -v zoxide fzf starship)
+        test $tool -nt $cache; and set stale 1
+    end
+    if test $stale = 1
+        mkdir -p (dirname $cache)
+        begin
+            echo $key
+            command -q zoxide; and zoxide init fish # z = jump to dir, zi = interactive
+            command -q fzf; and fzf --fish # Ctrl-R history, Ctrl-T files, Alt-C cd
+            command -q starship; and starship init fish --print-full-init # prompt; config in ~/.config/starship.toml
+        end >$cache.tmp # the block's status is the last init's, so move unconditionally
+        mv -f $cache.tmp $cache
+    end
+    test -r $cache; and source $cache
     if test "$TERM_PROGRAM" = vscode
         source (code --locate-shell-integration-path fish)
     end
-    command -q starship; and starship init fish | source # prompt; config in ~/.config/starship.toml
 end
