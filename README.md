@@ -15,15 +15,19 @@ git clone https://github.com/synthdnb/dotfiles.git ~/ws/dotfiles && cd ~/ws/dotf
 ```
 
 `install.sh` runs a preflight check, symlinks the configs into `$HOME` (any
-existing real file is moved to `*.bak`), sets up mise, runs `brew bundle`, and
-applies `osx.sh`. The mise and fzf/tpm/moon steps are described below.
+existing real file is moved to `*.bak`), sets up mise, runs `brew bundle`,
+bootstraps fisher (fish plugins), registers fish in `/etc/shells` and runs
+`chsh` to make it the login shell (prompts for your password), and applies
+`osx.sh`. The mise and fzf/tpm/moon steps are described below.
 
 ## What's here
 
 | File | Purpose |
 |------|---------|
-| `.zshrc` `.zprofile` `.bashrc` | shell |
-| `.p10k.zsh` | Powerlevel10k prompt |
+| `.config/fish/config.fish` `.config/fish/fish_plugins` | shell (fish, the login shell) + fisher plugin list |
+| `.config/starship.toml` | Starship prompt |
+| `.zshrc` `.zprofile` `.bashrc` | shell (zsh kept as fallback / for non-interactive & agent shells) |
+| `.p10k.zsh` | Powerlevel10k prompt (zsh fallback only) |
 | `.tmux.conf` | tmux multiplexer |
 | `.config/nvim/init.lua` | editor |
 | `.gitconfig` `.gitignore` | git (global) |
@@ -62,9 +66,22 @@ curl -sSL https://storage.eu-north1.nebius.cloud/cli/install.sh | bash
 ```
 
 After install: open tmux and press `prefix + I` to fetch tmux plugins, and set
-your terminal font to **MesloLGS NF** for the Powerlevel10k glyphs.
+your terminal font to **MesloLGS NF** — the Nerd Font is still needed for the
+Starship (and Powerlevel10k) glyphs.
+
+## fish notes
+
+- The oh-my-zsh git aliases (`gst`, `gco`, `gp`, `glog`, …) come from
+  `jhillyerd/plugin-git` as abbreviations — they expand in place when you press space.
+- Autosuggestions and syntax highlighting are built into fish (no plugins).
+- Up-arrow with text typed searches history for commands *containing* it
+  (substring, like zsh-history-substring-search); `ctrl-r` is fzf history search.
+- POSIX `source` snippets (`export FOO=bar`, `eval "$(tool init zsh)"`) need
+  translating to fish (`set -gx FOO bar`, `tool init fish | source`).
 
 ## Secrets
 
-Secrets are **never** tracked. `.zshrc` sources `~/.zsh_secrets` if it exists —
-put API keys/tokens there. Create it by hand on each machine.
+Secrets are **never** tracked. `.zshrc` sources `~/.zsh_secrets` and
+`config.fish` sources `~/.config/fish/secrets.fish` if they exist — put API
+keys/tokens there (`export FOO=...` for zsh, `set -gx FOO ...` for fish). Create
+them by hand on each machine.
