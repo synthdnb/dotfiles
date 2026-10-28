@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Preflight checks, symlink dotfiles into $HOME, set up mise, install Homebrew
-# packages (+ fzf, moon, tpm), then apply macOS defaults.
+# packages (+ fzf, fish/starship + fisher plugins, moon, tpm), make fish the
+# login shell, then apply macOS defaults.
 set -euo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -52,6 +53,9 @@ link .config/nvim/init.lua       "$HOME/.config/nvim/init.lua"
 link .config/htop/htoprc         "$HOME/.config/htop/htoprc"
 link .config/workmux/config.yaml "$HOME/.config/workmux/config.yaml"
 link .config/mise/config.toml    "$HOME/.config/mise/config.toml"
+link .config/fish/config.fish    "$HOME/.config/fish/config.fish"
+link .config/fish/fish_plugins   "$HOME/.config/fish/fish_plugins"
+link .config/starship.toml       "$HOME/.config/starship.toml"
 
 # Install the global tool versions (Node/Go/Python/Ruby) from the mise config.
 # Ruby uses precompiled binaries (ruby.compile=false), so no slow source build.
@@ -64,10 +68,33 @@ brew bundle --file="$DOTFILES/Brewfile"
 if [ -f "$DOTFILES/Brewfile.local" ]; then
   brew bundle --file="$DOTFILES/Brewfile.local"
 fi
-# fzf key-bindings + completion -> generates ~/.fzf.zsh and ~/.fzf.bash (sourced by .zshrc/.bashrc)
+# fzf key-bindings + completion -> generates ~/.fzf.zsh and ~/.fzf.bash (sourced by .zshrc/.bashrc).
+# fish needs neither: config.fish runs `fzf --fish` at startup.
 fzf_install="$(brew --prefix)/opt/fzf/install"
 if [ -x "$fzf_install" ]; then
   "$fzf_install" --key-bindings --completion --no-update-rc
+fi
+
+# fish: fisher plugin manager + the plugins in .config/fish/fish_plugins (linked above),
+# tool completions fish does not ship, then make fish the login shell (zsh stays installed).
+fish_bin="$(brew --prefix)/bin/fish"
+if [ -x "$fish_bin" ]; then
+  mkdir -p "$HOME/.config/fish/completions"
+  # </dev/null: fisher reads plugin names from stdin when it is not a tty and would hang under a pipe
+  "$fish_bin" -c 'functions -q fisher; or curl -fsL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source; fisher update' </dev/null \
+    || echo "fisher setup failed — see https://github.com/jorgebucaran/fisher"
+  for tool in rex kubectl; do
+    if command -v "$tool" >/dev/null 2>&1; then
+      out="$HOME/.config/fish/completions/$tool.fish"
+      "$tool" completion fish > "$out" || { rm -f "$out"; echo "$tool completion fish failed — skipped"; }
+    fi
+  done
+  # Login shell: /etc/shells needs sudo, chsh asks for the password. Neither failure aborts the script.
+  grep -qxF "$fish_bin" /etc/shells || echo "$fish_bin" | sudo tee -a /etc/shells >/dev/null \
+    || echo "could not add fish to /etc/shells — run: echo $fish_bin | sudo tee -a /etc/shells"
+  # dscl, not $SHELL: $SHELL still says zsh until the next login, which would re-prompt on every run.
+  login_shell="$(dscl . -read "/Users/$USER" UserShell 2>/dev/null | awk '{print $2}')"
+  [ "$login_shell" = "$fish_bin" ] || chsh -s "$fish_bin" || echo "chsh failed — run: chsh -s $fish_bin"
 fi
 
 # moon — not available via Homebrew (installs to ~/.moon/bin, which .zshrc adds to PATH)
@@ -94,5 +121,6 @@ fi
 [ -f "$DOTFILES/osx.sh" ] && bash "$DOTFILES/osx.sh"
 
 echo
-echo "Done. Secrets are NOT tracked — create ~/.zsh_secrets for API keys/tokens."
-echo "(.zshrc sources it automatically if present.)"
+echo "Done. Secrets are NOT tracked — put API keys/tokens in ~/.zsh_secrets (zsh)"
+echo "or ~/.config/fish/secrets.fish (fish); each is sourced automatically if present."
+echo "fish is now the login shell — open a new terminal."

@@ -1,0 +1,98 @@
+# ~/.config/starship.toml — prompt (replaces Powerlevel10k / .p10k.zsh)
+# Line 1: dir + git on the left, status/duration/env on the right (via $fill). Line 2: ❯
+add_newline = false
+format = """
+$directory$git_branch$git_status$fill$status$cmd_duration$jobs$python$kubernetes$terraform$aws$username$hostname$time
+$character"""
+
+[fill]
+symbol = ' '
+
+[directory]
+style = 'fg:31'
+truncation_length = 4
+truncate_to_repo = false
+fish_style_pwd_dir_length = 1
+read_only = ' '
+format = '[$path]($style)[$read_only]($read_only_style) '
+
+[character]
+success_symbol = '[❯](fg:76)'
+error_symbol = '[❯](fg:196)'
+vimcmd_symbol = '[❮](fg:76)'
+
+[git_branch]
+symbol = ''
+style = 'fg:76'
+format = '[$branch(:$remote_branch)]($style) '
+
+[git_status]
+style = 'fg:178'
+format = '([$ahead_behind$stashed$conflicted$staged$modified$deleted$renamed$untracked]($style) )'
+ahead = '⇡${count}'
+behind = '⇣${count}'
+diverged = '⇣${behind_count}⇡${ahead_count}'
+stashed = '*${count}'
+conflicted = '~${count}'
+staged = '+${count}'
+modified = '!${count}'
+deleted = '✘${count}'
+renamed = '»${count}'
+untracked = '?${count}'
+
+[status]
+disabled = false
+format = '[✘$status]($style) '
+style = 'fg:160'
+
+[cmd_duration]
+min_time = 3000
+format = '[$duration]($style) '
+style = 'fg:101'
+
+[jobs]
+symbol = '≡'
+format = '[$symbol$number]($style) '
+style = 'fg:37'
+
+# virtualenv name only, like p10k
+[python]
+format = '[(\($virtualenv\) )]($style)'
+style = 'fg:37'
+
+# p10k showed the kube context only while running kubectl/helm/etc.; starship has no
+# per-command trigger, so showing it inside k8s-ish projects is the nearest approximation.
+[kubernetes]
+disabled = false
+symbol = '⎈ '
+style = 'fg:134'
+format = '[$symbol$context( \($namespace\))]($style) '
+detect_files = ['Chart.yaml', 'kustomization.yaml', 'skaffold.yaml', 'Tiltfile']
+detect_folders = ['k8s', 'kubernetes', 'manifests', 'charts', 'helm']
+
+[terraform]
+format = '[$symbol$workspace]($style) '
+symbol = '󱁢 '
+style = 'fg:38'
+
+[aws]
+symbol = ' '
+style = 'fg:208'
+format = '[$symbol($profile )(\($region\) )]($style)'
+
+# too noisy; p10k showed it only on command
+[gcloud]
+disabled = true
+
+# defaults kept: shown only over ssh / as root
+[username]
+format = '[$user]($style)@'
+
+[hostname]
+format = '[$hostname]($style) '
+
+[time]
+disabled = false
+time_format = '%H:%M:%S'
+style = 'fg:66'
+format = '[$time]($style)'

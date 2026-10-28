@@ -5,6 +5,8 @@ tap "modem-dev/tap", trusted: true
 # === Tools (brew resolves and installs their dependencies automatically) ===
 # Tool for generating GNU Standards-compliant Makefiles
 brew "automake"
+# User-friendly command-line shell
+brew "fish"
 # Command-line fuzzy finder written in Go
 brew "fzf"
 # GitHub command-line tool
@@ -33,6 +35,8 @@ brew "ripgrep"
 brew "rust"
 # Static analysis and lint tool, for (ba)sh scripts
 brew "shellcheck"
+# Cross-shell prompt for astronauts
+brew "starship"
 # Terminal multiplexer
 brew "tmux"
 # Creates fully functional virtual k8s cluster inside host k8s cluster's namespace
