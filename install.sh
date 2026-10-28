@@ -83,9 +83,9 @@ if [ -x "$fish_bin" ]; then
   # </dev/null: fisher reads plugin names from stdin when it is not a tty and would hang under a pipe
   "$fish_bin" -c 'functions -q fisher; or curl -fsL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source; fisher update' </dev/null \
     || echo "fisher setup failed — see https://github.com/jorgebucaran/fisher"
-  # Homebrew's fish vendor snippet activates mise in every fish (interactive or
-  # not, ~27 ms each); config.fish activates it once, interactively, so turn the
-  # vendor snippet off. Universal variable: it must exist before conf.d runs.
+  # Homebrew's fish vendor snippet would run `mise activate` (a 221 MB process at
+  # every shell start and prompt); config.fish uses mise's shims instead, so turn
+  # the vendor snippet off. Universal variable: it must exist before conf.d runs.
   "$fish_bin" -c 'set -U MISE_FISH_AUTO_ACTIVATE 0'
   for tool in rex kubectl; do
     if command -v "$tool" >/dev/null 2>&1; then
