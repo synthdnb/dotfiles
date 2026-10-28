@@ -76,6 +76,7 @@ alias wm='workmux'
 alias tf="terraform"
 alias ccb='claude --permission-mode=bypassPermissions'
 alias cdb='codex --dangerously-bypass-approvals-and-sandbox'
+alias xcb='XCLAUDE_PICK=0 xclaude --permission-mode=bypassPermissions'
 
 ### End of Aliases
 
@@ -117,8 +118,8 @@ case ":$PATH:" in
 esac
 # pnpm end
 
-# Load secrets (API keys, tokens, etc.)
-[[ -f ~/.zsh_secrets ]] && source ~/.zsh_secrets
+# Load secrets (API keys, tokens, etc.) from the shell-agnostic dotenv file shared with fish
+[[ -r ~/.config/secrets.env ]] && { set -a; source ~/.config/secrets.env; set +a; }
 
 # Clear Claude Code notification when opening new shell in tmux
 [[ -n "$TMUX_PANE" ]] && ~/.local/bin/claude-clear-notify 2>/dev/null

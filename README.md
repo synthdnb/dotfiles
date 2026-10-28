@@ -81,7 +81,19 @@ Starship (and Powerlevel10k) glyphs.
 
 ## Secrets
 
-Secrets are **never** tracked. `.zshrc` sources `~/.zsh_secrets` and
-`config.fish` sources `~/.config/fish/secrets.fish` if they exist — put API
-keys/tokens there (`export FOO=...` for zsh, `set -gx FOO ...` for fish). Create
-them by hand on each machine.
+Secrets are **never** tracked. Both shells read one shared dotenv-style file,
+`~/.config/secrets.env`, if it exists — `.zshrc` sources it with `set -a`, and
+`config.fish` parses it with fish builtins (no extra tools). Put API keys/tokens
+there, create it by hand on each machine, and keep it private
+(`chmod 600 ~/.config/secrets.env`).
+
+Format: one `KEY=value` per line, no `export`; `#` comments and blank lines are
+allowed; wrap values containing spaces, `$`, or backslashes in single quotes.
+Don't use double quotes or trailing `# comments` on a value line: zsh executes
+the file as shell code while fish reads it as plain text, so only bare and
+single-quoted values behave the same in both.
+
+```sh
+OPENAI_API_KEY=sk-placeholder
+EXAMPLE_PASSPHRASE='placeholder with spaces'
+```

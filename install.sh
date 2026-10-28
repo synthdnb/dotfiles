@@ -121,6 +121,5 @@ fi
 [ -f "$DOTFILES/osx.sh" ] && bash "$DOTFILES/osx.sh"
 
 echo
-echo "Done. Secrets are NOT tracked — put API keys/tokens in ~/.zsh_secrets (zsh)"
-echo "or ~/.config/fish/secrets.fish (fish); each is sourced automatically if present."
+echo "Done. Secrets are NOT tracked — put API keys/tokens in ~/.config/secrets.env (KEY=value, read by zsh and fish)."
 echo "fish is now the login shell — open a new terminal."
