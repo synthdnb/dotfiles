@@ -40,8 +40,8 @@ bootstraps fisher (fish plugins), registers fish in `/etc/shells` and runs
 moon, Claude Code, and Codex (self-updating native binaries) — none of which `brew bundle` handles.
 
 Node, Go, Python, and Ruby are managed by **mise** (`.config/mise/config.toml`).
-`install.sh` runs `mise install` and puts mise's shims on PATH *before* `brew
-bundle`, so the Brewfile's `npm "..."` / `go "..."` entries resolve against them.
+`install.sh` runs `mise install`; `config.fish` puts mise's shims on PATH in
+every fish shell, so the tools resolve per directory without `mise activate`.
 Ruby installs as a precompiled binary (`ruby.compile=false`) — no source build.
 
 ## Prerequisites — install these *before* `./install.sh`
@@ -82,8 +82,12 @@ Starship (and Powerlevel10k) glyphs.
   `~/.cache/fish/init.fish`. The cache is rebuilt automatically when a tool's path
   or binary changes (a `brew upgrade` moves it to a new Cellar version); run
   `rm ~/.cache/fish/init.fish` to force a rebuild.
-- `install.sh` sets `MISE_FISH_AUTO_ACTIVATE=0` as a universal variable, which
-  turns off Homebrew's mise snippet, so mise activates once, from `config.fish`.
+- mise runs in shims mode: there is no `mise activate` (`install.sh` sets
+  `MISE_FISH_AUTO_ACTIVATE=0` as a universal variable so Homebrew's snippet
+  doesn't activate it). `mise which <tool>` shows the real binary. A `.venv` in
+  the directory tree is activated by `__venv_on_pwd` in `config.fish` instead of
+  mise's `_.python.venv`, and deactivated when you leave it. A venv activated
+  any other way (by hand, by an editor, `poetry shell`) is left alone.
 
 ## Secrets
 

@@ -26,12 +26,13 @@ set -gx CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN 1
 ### PATH (replaces the zsh path=(...), krew, Nebius path.zsh.inc, and pnpm blocks)
 # fish_add_path silently skips directories that do not exist (verified on fish 4.9.3).
 fish_add_path -g ~/.bin ~/.local/bin ~/go/bin ~/.moon/bin ~/.krew/bin ~/.nebius/bin $PNPM_HOME
-# Non-interactive fish (scripts, `fish -c`, launchd) reaches mise-managed tools
-# through its shims; interactive shells get the real install dirs put in front by
-# `mise activate` below. Same as `mise activate fish --shims | source`, minus the process.
-if not status is-interactive
-    fish_add_path -g ~/.local/share/mise/shims
-end
+# mise runs in shims mode in every shell. A shim resolves the tool version for the
+# current directory (and injects the config's [env]) on each call, so nothing runs
+# at startup or per prompt; `mise activate` cost ~28 ms per shell start plus a
+# `mise hook-env` process per prompt, because the mise binary is 221 MB. Same as
+# `mise activate fish --shims | source`, minus the process. `mise which node` shows
+# the real binary; `mise reshim` after installing a tool outside `mise install`.
+fish_add_path -g ~/.local/share/mise/shims
 # OrbStack: command-line tools and integration (appends ~/.orbstack/bin)
 test -f ~/.orbstack/shell/init2.fish; and source ~/.orbstack/shell/init2.fish
 
@@ -79,10 +80,6 @@ end
 if status is-interactive
     set -g fish_greeting # no greeting
     # emacs key bindings are fish's default (was: bindkey -e); auto_cd and history dedupe are built in
-    # brew's vendor_conf.d snippet (/opt/homebrew/share/fish/vendor_conf.d/mise-activate.fish)
-    # would activate mise a second time, for non-interactive shells too, so install.sh
-    # disables it with `set -U MISE_FISH_AUTO_ACTIVATE 0`; this guarded line is the only activation.
-    command -q mise; and mise activate fish | source
     # Prompt and jump/search tools. Their `init` output only changes when the
     # binary does, so it is cached: each init spawned a process (starship two)
     # and together they cost about 25 ms per shell. The cache is rebuilt when a
@@ -113,4 +110,47 @@ if status is-interactive
     if test "$TERM_PROGRAM" = vscode
         source (code --locate-shell-integration-path fish)
     end
+    # Replaces mise's `_.python.venv` auto-activation (pccafe, vessl-python-sdk),
+    # which needs `mise activate`'s prompt hook and so doesn't work with shims:
+    # entering a directory tree that has a .venv activates it, and leaving it
+    # deactivates a venv this function activated; a venv activated any other way
+    # is left alone. Builtins only. starship shows the venv, so the activate
+    # script's own prompt prefix is off.
+    set -gx VIRTUAL_ENV_DISABLE_PROMPT 1
+    function __venv_on_pwd --on-variable PWD --description 'activate ./.venv up the tree'
+        # A manual `deactivate` leaves our marker behind; forget it with the venv.
+        set -q VIRTUAL_ENV; or set -e __venv_auto
+        # A venv inherited from a parent shell has VIRTUAL_ENV but no `deactivate`,
+        # and this shell's PATH setup has pushed its bin behind the shims: re-adopt it
+        # by sourcing its activate script (_OLD_VIRTUAL_PATH is erased first, or the
+        # script would reset PATH to the parent's pre-venv PATH).
+        if set -q VIRTUAL_ENV; and not functions -q deactivate; and test -f $VIRTUAL_ENV/bin/activate.fish
+            set -l i (contains -i -- $VIRTUAL_ENV/bin $PATH); and set -e PATH[$i]
+            set -e _OLD_VIRTUAL_PATH
+            source $VIRTUAL_ENV/bin/activate.fish
+        end
+        # Only a venv this function activated (__venv_auto, exported so a nested
+        # shell knows too) is switched or deactivated; one activated by hand, by an
+        # editor or by `poetry shell` is left alone.
+        if set -q VIRTUAL_ENV; and test "$VIRTUAL_ENV" != "$__venv_auto"
+            return
+        end
+        set -l dir $PWD
+        while test "$dir" != / -a "$dir" != "$HOME"
+            if test -f $dir/.venv/bin/activate.fish
+                if test "$VIRTUAL_ENV" != "$dir/.venv"
+                    functions -q deactivate; and deactivate
+                    source $dir/.venv/bin/activate.fish
+                    set -gx __venv_auto $VIRTUAL_ENV
+                end
+                return
+            end
+            set dir (path dirname $dir)
+        end
+        if set -q VIRTUAL_ENV
+            deactivate
+            set -e __venv_auto
+        end
+    end
+    __venv_on_pwd
 end
