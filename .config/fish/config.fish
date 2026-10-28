@@ -17,8 +17,13 @@ fish_add_path -g ~/.bin ~/.local/bin ~/go/bin ~/.moon/bin ~/.krew/bin ~/.nebius/
 test -f ~/.orbstack/shell/init2.fish; and source ~/.orbstack/shell/init2.fish
 
 ### Secrets
-# never tracked — API keys/tokens (fish counterpart of ~/.zsh_secrets)
-test -f ~/.config/fish/secrets.fish; and source ~/.config/fish/secrets.fish
+# never tracked — API keys/tokens; dotenv-style file shared with .zshrc
+if test -r ~/.config/secrets.env
+    for line in (string match -rv '^\s*(#|$)' < ~/.config/secrets.env)
+        set -l kv (string split -m1 = -- $line)
+        set -gx $kv[1] (string trim -c '"\'' -- $kv[2])
+    end
+end
 
 ### Aliases
 alias ls 'ls -G'
