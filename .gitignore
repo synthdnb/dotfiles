@@ -3,3 +3,5 @@
 .mise.toml
 .linear.toml
 Brewfile.local
+
+**/.claude/settings.local.json
