@@ -1,0 +1,11 @@
+# macOS-only git settings, linked to ~/.gitconfig.os by install.sh (see .gitconfig).
+# GitHub over ssh (the Mac has the key); gh handles https (gists, other hosts).
+# Absolute gh path: GUI apps (editors) call git without /opt/homebrew/bin on PATH.
+[url "git@github.com:"]
+	insteadOf = https://github.com/
+[credential "https://github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential

@@ -1,0 +1,8 @@
+# Linux-only git settings, linked to ~/.gitconfig.os by install.sh (see .gitconfig).
+# No ssh→https rewrite: a server/VM has no GitHub key; `gh auth login` tokens do https.
+[credential "https://github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential

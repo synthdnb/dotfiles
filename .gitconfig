@@ -11,11 +11,7 @@
 	ff = only
 [push]
 	autoSetupRemote = true
-[url "git@github.com:"]
-	insteadOf = https://github.com/
-[credential "https://github.com"]
-	helper = 
-	helper = !/opt/homebrew/bin/gh auth git-credential
-[credential "https://gist.github.com"]
-	helper = 
-	helper = !/opt/homebrew/bin/gh auth git-credential
+# OS-specific part: install.sh links .gitconfig.macos or .gitconfig.linux here
+# (GitHub transport + credential helper differ: ssh key on the Mac, gh token on Linux).
+[include]
+	path = ~/.gitconfig.os
