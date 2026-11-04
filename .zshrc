@@ -58,7 +58,8 @@ export LSCOLORS="Gxfxcxdxbxegedxbagxcad"
 export LS_COLORS="di=1;36:ln=35:so=32:pi=33:ex=31:bd=34;46:cd=34;43:su=0;41:sg=30;46:tw=0;42:ow=30;43"
 export TIME_STYLE='long-iso'
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
-alias ls='ls -G'
+# BSD ls colors with -G; GNU ls (Linux) reads LS_COLORS with --color (-G means no-group there)
+if [[ "$OSTYPE" == darwin* ]]; then alias ls='ls -G'; else alias ls='ls --color=auto'; fi
 alias mx='moon run'
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 
@@ -82,7 +83,13 @@ alias xcb='XCLAUDE_PICK=0 xclaude --permission-mode=bypassPermissions'
 
 
 
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+# fzf key-bindings: ~/.fzf.zsh is written by Homebrew's fzf installer (macOS);
+# on Linux fzf comes from mise and prints its own init.
+if [ -f ~/.fzf.zsh ]; then
+  source ~/.fzf.zsh
+elif command -v fzf >/dev/null; then
+  source <(fzf --zsh)
+fi
 
 ### VSCode
 [[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path zsh)"
@@ -93,6 +100,7 @@ slug(){
 	cat /dev/urandom | LC_ALL=C tr -dc 'a-zA-Z0-9' | fold -w $1 | head -n 1
 }
 
+if [[ "$OSTYPE" == darwin* ]]; then # networksetup is macOS only
 hotspot_enable(){
 	sudo networksetup -setmanual Wi-Fi 172.20.10.3 255.255.255.240 172.20.10.1
 }
@@ -100,18 +108,23 @@ hotspot_enable(){
 hotspot_disable(){
 	sudo networksetup -setdhcp Wi-Fi
 }
+fi
 
 command -v mise >/dev/null && eval "$(mise activate zsh)"
 command -v zoxide >/dev/null && eval "$(zoxide init zsh)"  # z = jump to dir, zi = interactive
 alias x='tar --zstd -xvf'
 
 # The next line updates PATH for Nebius CLI.
-if [ -f '/Users/marshall/.nebius/path.zsh.inc' ]; then source '/Users/marshall/.nebius/path.zsh.inc'; fi
+if [ -f "$HOME/.nebius/path.zsh.inc" ]; then source "$HOME/.nebius/path.zsh.inc"; fi
 export EDITOR='nvim'
 bindkey -e
 
 # pnpm
-export PNPM_HOME="/Users/marshall/Library/pnpm"
+if [[ "$OSTYPE" == darwin* ]]; then
+  export PNPM_HOME="$HOME/Library/pnpm"
+else
+  export PNPM_HOME="$HOME/.local/share/pnpm"
+fi
 case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
@@ -125,3 +138,5 @@ esac
 [[ -n "$TMUX_PANE" ]] && ~/.local/bin/claude-clear-notify 2>/dev/null
 
 export CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1
+
+. "$HOME/.moon/bin/env"

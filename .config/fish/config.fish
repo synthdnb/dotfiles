@@ -2,25 +2,34 @@
 # Symlinked to ~/.config/fish/config.fish by install.sh.
 
 ### Environment (runs for non-interactive fish too)
+# OS without spawning `uname`: only Linux has /proc. Builtins only, so it is free.
+set -g __os macos
+test -e /proc/version; and set -g __os linux
 # Output of `brew shellenv fish`, pinned (was .zprofile): spawning brew cost
 # ~18 ms per shell, non-interactive ones too. Regenerate with `brew shellenv fish`
-# if Homebrew moves.
-set -gx HOMEBREW_PREFIX /opt/homebrew
-set -gx HOMEBREW_CELLAR /opt/homebrew/Cellar
-set -gx HOMEBREW_REPOSITORY /opt/homebrew
-fish_add_path -g --move --path /opt/homebrew/bin /opt/homebrew/sbin
-if test -n "$MANPATH"
-    set -gx MANPATH (string replace --regex '^:*(.*?):*$' ':$1' -- "$MANPATH")
+# if Homebrew moves. macOS only; Linux has no Homebrew (dnf + mise instead).
+if test -x /opt/homebrew/bin/brew
+    set -gx HOMEBREW_PREFIX /opt/homebrew
+    set -gx HOMEBREW_CELLAR /opt/homebrew/Cellar
+    set -gx HOMEBREW_REPOSITORY /opt/homebrew
+    fish_add_path -g --move --path /opt/homebrew/bin /opt/homebrew/sbin
+    if test -n "$MANPATH"
+        set -gx MANPATH (string replace --regex '^:*(.*?):*$' ':$1' -- "$MANPATH")
+    end
+    if not set -q INFOPATH
+        set INFOPATH ''
+    end
+    set -gx INFOPATH /opt/homebrew/share/info $INFOPATH
 end
-if not set -q INFOPATH
-    set INFOPATH ''
-end
-set -gx INFOPATH /opt/homebrew/share/info $INFOPATH
 set -gx LSCOLORS Gxfxcxdxbxegedxbagxcad
 set -gx LS_COLORS "di=1;36:ln=35:so=32:pi=33:ex=31:bd=34;46:cd=34;43:su=0;41:sg=30;46:tw=0;42:ow=30;43"
 set -gx TIME_STYLE long-iso
 set -gx EDITOR nvim
-set -gx PNPM_HOME ~/Library/pnpm
+if test $__os = macos
+    set -gx PNPM_HOME ~/Library/pnpm
+else
+    set -gx PNPM_HOME ~/.local/share/pnpm
+end
 set -gx CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN 1
 
 ### PATH (replaces the zsh path=(...), krew, Nebius path.zsh.inc, and pnpm blocks)
@@ -46,7 +55,12 @@ if test -r ~/.config/secrets.env
 end
 
 ### Aliases
-alias ls 'ls -G'
+# BSD ls colors with -G; GNU ls (Linux) reads LS_COLORS with --color (-G means no-group there)
+if test $__os = macos
+    alias ls 'ls -G'
+else
+    alias ls 'ls --color=auto'
+end
 alias mx 'moon run'
 alias vim nvim
 alias vi nvim
@@ -68,12 +82,14 @@ function slug --description 'random alphanumeric string of length N'
     cat /dev/urandom | LC_ALL=C tr -dc 'a-zA-Z0-9' | fold -w $argv[1] | head -n 1
 end
 
-function hotspot_enable
-    sudo networksetup -setmanual Wi-Fi 172.20.10.3 255.255.255.240 172.20.10.1
-end
+if test $__os = macos # networksetup is macOS only
+    function hotspot_enable
+        sudo networksetup -setmanual Wi-Fi 172.20.10.3 255.255.255.240 172.20.10.1
+    end
 
-function hotspot_disable
-    sudo networksetup -setdhcp Wi-Fi
+    function hotspot_disable
+        sudo networksetup -setdhcp Wi-Fi
+    end
 end
 
 ### Interactive only
@@ -88,13 +104,22 @@ if status is-interactive
     set -l cache ~/.cache/fish/init.fish
     # First line of the cache names the binaries it was built from; a brew upgrade
     # changes their Cellar path (…/Cellar/starship/1.27.0/…), a manual rebuild their mtime.
-    set -l key "# built from: "(string join ' ' (path resolve (command -v zoxide fzf starship)))
+    # On Linux the tools are mise shims (symlinks to the mise binary, identical for
+    # every version), so the key uses mise's installs/<tool>/latest link instead,
+    # which moves on `mise upgrade`.
+    set -l bins
+    for tool in zoxide fzf starship
+        set -l bin (command -v $tool); or continue
+        string match -q '*/mise/shims/*' -- $bin; and set bin ~/.local/share/mise/installs/$tool/latest
+        set -a bins (path resolve $bin)
+    end
+    set -l key "# built from: "(string join ' ' $bins)
     set -l have
     test -r $cache; and read -l have <$cache
     set -l stale 0
     test "$have" = "$key"; or set stale 1
-    for tool in (command -v zoxide fzf starship)
-        test $tool -nt $cache; and set stale 1
+    for bin in $bins
+        test $bin -nt $cache; and set stale 1
     end
     if test $stale = 1
         mkdir -p (dirname $cache)

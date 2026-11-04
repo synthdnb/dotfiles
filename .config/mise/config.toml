@@ -5,15 +5,34 @@ go = "1.25.4"
 ruby = "latest"
 terraform = "latest"
 
+# Linux only (os = ["linux"] is ignored on macOS, where these come from the
+# Brewfile). Amazon Linux 2023 packages none of them; mise fetches the GitHub
+# release binaries. fish itself is installed by install.sh (a shim is a poor
+# login shell), tmux/zsh/htop/java come from dnf.
+fzf = { version = "latest", os = ["linux"] }
+zoxide = { version = "latest", os = ["linux"] }
+starship = { version = "latest", os = ["linux"] }
+ripgrep = { version = "latest", os = ["linux"] }
+neovim = { version = "latest", os = ["linux"] }
+shellcheck = { version = "latest", os = ["linux"] }
+helm = { version = "latest", os = ["linux"] }
+kubectx = { version = "latest", os = ["linux"] }
+vcluster = { version = "latest", os = ["linux"] }
+rust = { version = "latest", os = ["linux"] }
+# Not in mise's registry: the github backend fetches the matching release asset.
+"github:raine/workmux" = { version = "latest", os = ["linux"] }
+# git pager/difftool (.gitconfig: `pager = hunk pager`)
+"github:modem-dev/hunk" = { version = "latest", os = ["linux"] }
+
 [env]
 # mise points GOBIN at the ACTIVE Go version's own bin dir, so `go install`
 # binaries land inside a toolchain directory and disappear from PATH the moment
 # another repo pins a different Go (~/ws/magma pins 1.25.11, which hid every
 # tool installed under 1.25.4). `mise uninstall go@X` would delete them outright.
-# ~/go/bin is version-independent and already on PATH via .zshrc.
-# Absolute, not ~/go/bin: mise exports [env] values verbatim without expanding
+# ~/go/bin is version-independent and already on PATH via .zshrc / config.fish.
+# Templated, not ~/go/bin: mise exports [env] values verbatim without expanding
 # the tilde, and Go would read that as a relative dir literally named "~".
-GOBIN = "/Users/marshall/go/bin"
+GOBIN = "{{env.HOME}}/go/bin"
 
 [settings]
 # Install precompiled Ruby binaries instead of building from source — avoids the

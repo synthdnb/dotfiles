@@ -1,8 +1,9 @@
 # dotfiles
 
-Personal macOS setup.
+Personal setup for macOS and Amazon Linux 2023 (Fedora-family Linux with `dnf`).
 
-**Fresh Mac, one command** — installs Homebrew (which brings git), clones, and runs `install.sh`:
+**Fresh machine, one command** — on a Mac installs Homebrew (which brings git), on Linux
+installs git with dnf; then clones and runs `install.sh`:
 
 ```sh
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/synthdnb/dotfiles/main/bootstrap.sh)"
@@ -15,10 +16,11 @@ git clone https://github.com/synthdnb/dotfiles.git ~/ws/dotfiles && cd ~/ws/dotf
 ```
 
 `install.sh` runs a preflight check, symlinks the configs into `$HOME` (any
-existing real file is moved to `*.bak`), sets up mise, runs `brew bundle`,
-bootstraps fisher (fish plugins), registers fish in `/etc/shells` and runs
-`chsh` to make it the login shell (prompts for your password), and applies
-`osx.sh`. The mise and fzf/tpm/moon steps are described below.
+existing real file is moved to `*.bak`), sets up mise, installs packages
+(`brew bundle` on macOS, `dnf` + mise on Linux), bootstraps fisher (fish
+plugins), registers fish in `/etc/shells` and runs `chsh` to make it the login
+shell (prompts for your password on macOS; via sudo on Linux), and on macOS
+applies `osx.sh`. The mise and fzf/tpm/moon steps are described below.
 
 ## What's here
 
@@ -30,11 +32,11 @@ bootstraps fisher (fish plugins), registers fish in `/etc/shells` and runs
 | `.p10k.zsh` | Powerlevel10k prompt (zsh fallback only) |
 | `.tmux.conf` | tmux multiplexer |
 | `.config/nvim/init.lua` | editor |
-| `.gitconfig` `.gitignore` | git (global) |
+| `.gitconfig` `.gitignore` | git (global); `.gitconfig.macos` / `.gitconfig.linux` is linked to `~/.gitconfig.os` and included (GitHub over ssh + Homebrew gh on the Mac, gh https token on Linux) |
 | `.config/htop/htoprc` `.config/workmux/config.yaml` | app configs |
 | `.config/mise/config.toml` | mise tool versions (node/go/python/ruby) + settings |
-| `Brewfile` | `brew bundle` package list (regenerate: `brew bundle dump --force`) |
-| `osx.sh` | macOS `defaults write` tweaks |
+| `Brewfile` | `brew bundle` package list, macOS only (regenerate: `brew bundle dump --force`) |
+| `osx.sh` | macOS `defaults write` tweaks (skipped on Linux) |
 
 `install.sh` also runs the fzf key-binding installer, clones tpm, and installs
 moon, Claude Code, and Codex (self-updating native binaries) — none of which `brew bundle` handles.
@@ -44,9 +46,29 @@ Node, Go, Python, and Ruby are managed by **mise** (`.config/mise/config.toml`).
 every fish shell, so the tools resolve per directory without `mise activate`.
 Ruby installs as a precompiled binary (`ruby.compile=false`) — no source build.
 
+## Linux (Amazon Linux 2023)
+
+There is no Homebrew on Linux, so `install.sh` sources the same tools differently:
+
+| Source | Tools |
+|--------|-------|
+| `dnf` | tmux, zsh, htop, automake, gcc/make, wget, jq, git, libatomic (for node), `util-linux-user` (chsh), Amazon Corretto 11 (`openjdk@11` counterpart) |
+| mise (`.config/mise/config.toml`, entries with `os = ["linux"]`) | fzf, zoxide, starship, ripgrep, neovim, shellcheck, helm, kubectx, vcluster, rust, workmux, hunk — GitHub release binaries, on PATH through mise's shims |
+| GitHub release (static build, `install.sh`) | fish → `/usr/local/bin/fish`, so the login shell is a real binary rather than a mise shim |
+| upstream installers (same as macOS) | mise itself (`https://mise.run`), moon, Claude Code, Codex, tpm |
+
+Not installed on Linux: the casks (GUI apps, font), `reattach-to-user-namespace`,
+`xclip` (not packaged; nvim's clipboard falls back to OSC 52 over ssh). The
+shell configs detect the OS (`$OSTYPE` in zsh, `/proc/version` in fish — no
+`uname` process) for the few things that differ: Homebrew paths, `ls -G` vs
+`ls --color`, `PNPM_HOME`, the macOS-only `hotspot_*` functions. fzf's zsh/bash
+key-bindings fall back to `fzf --zsh` / `fzf --bash` when Homebrew's `~/.fzf.*`
+files are absent. `$HOME`-relative paths are used instead of `/Users/marshall`.
+
 ## Prerequisites — install these *before* `./install.sh`
 
-`install.sh` runs a preflight check and aborts unless both are present:
+On Linux only `git`, `curl`, `dnf` and `sudo` are needed. On macOS `install.sh`
+runs a preflight check and aborts unless both of these are present:
 
 ```sh
 # Xcode Command Line Tools (Homebrew, git, and compilers need it)
@@ -80,7 +102,8 @@ Starship (and Powerlevel10k) glyphs.
   translating to fish (`set -gx FOO bar`, `tool init fish | source`).
 - The zoxide, fzf, and starship `init` scripts are cached in
   `~/.cache/fish/init.fish`. The cache is rebuilt automatically when a tool's path
-  or binary changes (a `brew upgrade` moves it to a new Cellar version); run
+  or binary changes (a `brew upgrade` moves it to a new Cellar version; on Linux
+  `mise upgrade` moves the `installs/<tool>/latest` link); run
   `rm ~/.cache/fish/init.fish` to force a rebuild.
 - mise runs in shims mode: there is no `mise activate` (`install.sh` sets
   `MISE_FISH_AUTO_ACTIVATE=0` as a universal variable so Homebrew's snippet
