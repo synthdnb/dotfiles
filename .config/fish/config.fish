@@ -53,6 +53,15 @@ if test -r ~/.config/secrets.env
         set -gx $kv[1] (string trim -c '"\'' -- $kv[2])
     end
 end
+# Rex login server: the 1Password service-account token. bash gets it from
+# /etc/profile.d/rex-support.sh, which fish does not read. The file is
+# root:support 0640, so being able to read it is the group check.
+if test -r /etc/rex-support/op.env
+    for line in (string match -rv '^\s*(#|$)' < /etc/rex-support/op.env)
+        set -l kv (string split -m1 = -- $line)
+        set -gx $kv[1] $kv[2]
+    end
+end
 
 ### Aliases
 # BSD ls colors with -G; GNU ls (Linux) reads LS_COLORS with --color (-G means no-group there)
